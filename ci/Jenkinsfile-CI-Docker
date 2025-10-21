@@ -3,7 +3,7 @@ node {
     checkout scm
 
     // 环境变量定义（对应原 environment 块）
-    def aliyunRegistry = "registry.cn-shanghai.aliyuncs.com'"
+    def aliyunRegistry = "registry.cn-shanghai.aliyuncs.com"
     def aliyunNamespace = "pers_gte"  // 你的阿里云命名空间
     def registry_user = 'mhzboy2008'
     def registry_pswd = 'gte123456'
@@ -26,7 +26,7 @@ node {
         sh "docker rm -f dify-api-temp || true"
         // --entrypoint 覆盖入口点，直接执行 exit 0，不启动服务
         sh "docker run --name dify-api-temp --entrypoint /bin/sh langgenius/dify-api:1.9.1 -c 'exit 0'"
-        sh "docker cp 'ci/dify/docker-compose.override.yaml' dify-api-temp:/app/"
+        sh "docker cp ci/dify/docker-compose.override.yaml dify-api-temp:/app/"
         sh "docker commit dify-api-temp ${difyApiImage}"    // 从当前容器实力创建一个新的镜像
         sh "docker rm dify-api-temp"
         echo "Dify镜像 ${difyApiImage} 构建完毕"
@@ -51,7 +51,7 @@ node {
         echo "Dify镜像 ${difyApiImage}， ${difyWebImage} 推送完毕"
 
         // 推送 VLLM 镜像
-        sh "docker tag vllm-basic:v0.4.0-${buildNumber} ${difyApiImage}"
+        sh "docker tag vllm-basic:v0.4.0-${buildNumber} ${vllmImage}"
         sh "docker push ${vllmImage}"
         echo "Dify镜像 ${vllmImage} 推送完毕"
     }
