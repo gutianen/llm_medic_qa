@@ -1,0 +1,64 @@
+// 定义节点（与原 pipeline 的 agent any 对应，使用任意可用节点）
+node {
+    checkout scm
+
+    // 环境变量定义（对应原 environment 块）
+    def aliyunRegistry = "registry.cn-hangzhou.aliyuncs.com"
+    def aliyunNamespace = "pers_gte"  // 你的阿里云命名空间
+    def registry_user = 'mhzboy2008'
+    def registry_pswd = 'gte123456'
+    def buildNumber = env.BUILD_NUMBER  // Jenkins 内置构建号
+    def difyApiImage = "${aliyunRegistry}/${aliyunNamespace}/dify-api-medic:${buildNumber}"
+    def difyWebImage = "${aliyunRegistry}/${aliyunNamespace}/dify-web-medic:${buildNumber}"
+    def vllmImage = "${aliyunRegistry}/${aliyunNamespace}/vllm-basic:v0.4.0-${buildNumber}"
+    def localModelPath = "../tuned_model/medicqa_llm_tuned_model"  // 本地模型绝对路径
+
+    stage('1：拉取Dify基础镜像') {
+        # 只拉取 Dify 官方基础镜像 api和web（注入自定义配置用）
+        sh "docker pull langgenius/dify-api:1.9.1"
+        sh "docker pull langgenius/dify-web:1.9.1"
+        echo "Dify基础镜像 dify-api, dify-web拉取完毕..."
+    }
+
+    stage('2：构建 Dify 智能体镜像') {
+        # 构建 Dify api/web 镜像（叠加 override 配置）
+        sh "docker run --name dify-api-temp langgenius/dify-api:1.9.1 /bin/true"   //让容器启动后立即退出（无需手动停止）
+        sh "docker cp dify/docker-compose.override.yaml dify-api-temp:/app/"
+        sh "docker commit dify-api-temp ${difyApiImage}"    // 从当前容器实力创建一个新的镜像
+        sh "docker rm dify-api-temp"
+        echo "Dify镜像 ${difyApiImage} 构建完毕"
+
+        sh "docker tag langgenius/dify-web:1.9.1 ${difyWebImage}"
+        echo "Dify镜像 ${difyWebImage} 构建完毕"
+    }
+
+    stage('3：构建 VLLM 框架镜像') {
+        dir('vllm') {  // 切换到 VLLM 配置目录
+            sh "docker build -f Dockerfile.vllm -t ${vllmImage} ."
+        }
+        echo "VLLM镜像 ${vllmImage} 构建完毕"
+    }
+
+    stage('4：推送所有镜像到阿里云私仓') {
+        sh "docker login -u ${registry_user} -p ${registry_pswd} ${aliyunRegistry}"
+
+        # 推送 Dify 镜像
+        sh "docker tag dify-api-medic:${buildNumber} ${difyApiImage}"
+        sh "docker tag dify-web-medic:${buildNumber} ${difyWebImage}"
+        sh "docker push ${difyApiImage}"
+        sh "docker push ${difyWebImage}"
+        echo "Dify镜像 ${difyApiImage}， ${difyWebImage} 推送完毕"
+
+        # 推送 VLLM 镜像
+        sh "docker tag vllm-basic:v0.4.0-${buildNumber} ${difyApiImage}"
+        sh "docker push ${vllmImage}"
+        echo "Dify镜像 ${vllmImage} 推送完毕"
+    }
+
+    stage('5：清理本地镜像) {
+        echo "开始清理本地镜像..."
+        sh "docker rmi ${difyApiImage} ${difyWebImage} ${vllmImage} || true"
+        echo "本地镜像 ${difyApiImage} ${difyWebImage} ${vllmImage} 清理完毕"
+    }
+
+}

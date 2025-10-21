@@ -1,0 +1,32 @@
+# 转换为Ollama的大模型格式
+# 命令：ollama create qwen2.5-medicqa:0.5b -f Modelfile
+# 1. 指向 Qwen2 微调模型目录（根据你的实际路径修改）
+from ./tuned_model/medicqa_llm_tuned_model
+
+# 2. 系统角色（与微调时的系统提示一致，若微调未指定则自定义）
+system """
+你是基于 Qwen2 微调的专业助手，专注于医疗知识问答，回答简洁准确，基于检索到的信息生成内容。
+"""
+
+# 3. 对话模板（适配 Qwen2 微调格式，关键！）
+# Qwen2 常用对话模板：<|im_start|>system...<|im_end|><|im_start|>user...<|im_end|><|im_start|>assistant...
+template """
+<|im_start|>system
+{{ .System }}
+<|im_end|>
+<|im_start|>user
+{{ .Prompt }}
+<|im_end|>
+<|im_start|>assistant
+"""
+
+# 4. 推理参数（适配 Qwen2-0.5B 模型特性）
+# Qwen2 对温度敏感，0.6 平衡准确性和多样性
+parameter temperature 0.6
+# 基于硬件调整，0.5B 模型建议不超过 8192（避免内存溢出）
+parameter num_ctx 8192
+# 采样多样性控制
+parameter top_p 0.9
+# 线程数，根据 CPU 核心数设置
+parameter num_thread 4
+

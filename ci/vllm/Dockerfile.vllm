@@ -1,0 +1,10 @@
+# 基础镜像：VLLM 兼容 Qwen2，支持 CPU/GPU 自动适配
+FROM vllm/vllm-openai:v0.4.0
+# 环境变量：指向容器内模型挂载路径（需与启动时的 -v 挂载路径一致）
+ENV MODEL_PATH=/model
+# 模型最大上下文长度（Qwen2.5-0.5B 支持 32768，选 4096 节省资源）
+ENV MAX_MODEL_LEN=8192
+# 暴露 VLLM OpenAI 兼容 API 端口（默认 8000，与 Dify 配置无冲突）
+EXPOSE 8000
+# 启动命令：加载挂载的本地模型，无 GPU 需加 --cpu 参数
+CMD ["sh", "-c", "vllm serve-openai --model $MODEL_PATH --max-model-len $MAX_MODEL_LEN]

@@ -3,6 +3,13 @@ __pycache__/
 *.py[codz]
 *$py.class
 .idea
+data/
+data/*
+tuned_model
+tuned_model/*
+knowledge_base
+knowledge_base/*
+nohup.out
 
 # C extensions
 *.so
@@ -206,3 +213,6 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+!/data/
+!/tuned_model/
+!/knowledge_base/

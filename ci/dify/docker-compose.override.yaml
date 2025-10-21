@@ -1,0 +1,44 @@
+version: '3'
+services:
+  api:
+    environment:
+      # 配置 VLLM 为默认大模型（覆盖 Dify 原 Ollama 配置）
+      - DEFAULT_LLM_MODEL=vllm-basic
+      - OPENAI_API_BASE=http://vllm-basic:8000/v1  # VLLM 容器地址（同网络）
+    networks:  # 加入 vllm 网络
+      - milvus
+      - vllm
+  worker:
+    environment:
+      # Worker 服务也需同步配置，确保任务处理时调用 VLLM
+      - DEFAULT_LLM_MODEL=vllm-basic
+      - OPENAI_API_BASE=http://vllm-basic:8000/v1
+    networks:  # 加入 vllm 网络
+      - milvus
+      - vllm
+
+  worker_beat:
+    networks:  # 加入 vllm 网络
+      - milvus
+      - vllm
+
+  sandbox:
+    networks:  # 加入 vllm 网络
+      - milvus
+      - vllm
+
+  ssrf_proxy:
+    networks:  # 加入 vllm 网络
+      - milvus
+      - vllm
+
+
+
+
+
+# 声明使用外部已存在的 vllm 网络（关键）
+networks:
+  vllm:
+    external: true  # 表示该网络已手动创建，Compose 无需重复创建
+
+
