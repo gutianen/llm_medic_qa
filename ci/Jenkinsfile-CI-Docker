@@ -14,14 +14,14 @@ node {
     def localModelPath = "../tuned_model/medicqa_llm_tuned_model"  // 本地模型绝对路径
 
     stage('1：拉取Dify基础镜像') {
-        # 只拉取 Dify 官方基础镜像 api和web（注入自定义配置用）
+        // 只拉取 Dify 官方基础镜像 api和web（注入自定义配置用）
         sh "docker pull langgenius/dify-api:1.9.1"
         sh "docker pull langgenius/dify-web:1.9.1"
         echo "Dify基础镜像 dify-api, dify-web拉取完毕..."
     }
 
     stage('2：构建 Dify 智能体镜像') {
-        # 构建 Dify api/web 镜像（叠加 override 配置）
+        // 构建 Dify api/web 镜像（叠加 override 配置）
         sh "docker run --name dify-api-temp langgenius/dify-api:1.9.1 /bin/true"   //让容器启动后立即退出（无需手动停止）
         sh "docker cp dify/docker-compose.override.yaml dify-api-temp:/app/"
         sh "docker commit dify-api-temp ${difyApiImage}"    // 从当前容器实力创建一个新的镜像
@@ -42,14 +42,14 @@ node {
     stage('4：推送所有镜像到阿里云私仓') {
         sh "docker login -u ${registry_user} -p ${registry_pswd} ${aliyunRegistry}"
 
-        # 推送 Dify 镜像
+        // 推送 Dify 镜像
         sh "docker tag dify-api-medic:${buildNumber} ${difyApiImage}"
         sh "docker tag dify-web-medic:${buildNumber} ${difyWebImage}"
         sh "docker push ${difyApiImage}"
         sh "docker push ${difyWebImage}"
         echo "Dify镜像 ${difyApiImage}， ${difyWebImage} 推送完毕"
 
-        # 推送 VLLM 镜像
+        // 推送 VLLM 镜像
         sh "docker tag vllm-basic:v0.4.0-${buildNumber} ${difyApiImage}"
         sh "docker push ${vllmImage}"
         echo "Dify镜像 ${vllmImage} 推送完毕"
