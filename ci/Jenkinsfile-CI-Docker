@@ -22,6 +22,8 @@ node {
 
     stage('2：构建 Dify 智能体镜像') {
         // 构建 Dify api/web 镜像（叠加 override 配置）
+        // 先强制删除可能残留的同名容器（即使不存在也不报错）
+        sh "docker rm -f dify-api-temp || true"
         // --entrypoint 覆盖入口点，直接执行 exit 0，不启动服务
         sh "docker run --name dify-api-temp --entrypoint /bin/sh langgenius/dify-api:1.9.1 -c 'exit 0'"
         sh "docker cp ci/dify/docker-compose.override.yaml dify-api-temp:/app/"
