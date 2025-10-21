@@ -44,14 +44,11 @@ node {
         sh "docker login -u ${registry_user} -p ${registry_pswd} ${aliyunRegistry}"
 
         // 推送 Dify 镜像
-        sh "docker tag dify-api-medic:${buildNumber} ${difyApiImage}"
-        sh "docker tag dify-web-medic:${buildNumber} ${difyWebImage}"
         sh "docker push ${difyApiImage}"
         sh "docker push ${difyWebImage}"
         echo "Dify镜像 ${difyApiImage}， ${difyWebImage} 推送完毕"
 
         // 推送 VLLM 镜像
-        sh "docker tag vllm-basic:v0.4.0-${buildNumber} ${vllmImage}"
         sh "docker push ${vllmImage}"
         echo "Dify镜像 ${vllmImage} 推送完毕"
     }
