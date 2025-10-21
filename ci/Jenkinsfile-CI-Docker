@@ -26,7 +26,7 @@ node {
         sh "docker rm -f dify-api-temp || true"
         // --entrypoint 覆盖入口点，直接执行 exit 0，不启动服务
         sh "docker run --name dify-api-temp --entrypoint /bin/sh langgenius/dify-api:1.9.1 -c 'exit 0'"
-        sh "docker cp ci/dify/docker-compose.override.yaml dify-api-temp:/app/"
+        sh "docker cp 'ci/dify/docker-compose.override.yaml' dify-api-temp:/app/"
         sh "docker commit dify-api-temp ${difyApiImage}"    // 从当前容器实力创建一个新的镜像
         sh "docker rm dify-api-temp"
         echo "Dify镜像 ${difyApiImage} 构建完毕"
