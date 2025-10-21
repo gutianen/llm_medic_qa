@@ -34,9 +34,7 @@ node {
     }
 
     stage('3：构建 VLLM 框架镜像') {
-        dir('vllm') {  // 切换到 VLLM 配置目录
-            sh "docker build -f Dockerfile.vllm -t ${vllmImage} ."
-        }
+        sh "docker build -f ci/vllm/Dockerfile.vllm -t ${vllmImage} ."
         echo "VLLM镜像 ${vllmImage} 构建完毕"
     }
 
