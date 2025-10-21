@@ -3,7 +3,7 @@ node {
     checkout scm
 
     // 环境变量定义（对应原 environment 块）
-    def aliyunRegistry = "registry.cn-hangzhou.aliyuncs.com"
+    def aliyunRegistry = "registry.cn-shanghai.aliyuncs.com'"
     def aliyunNamespace = "pers_gte"  // 你的阿里云命名空间
     def registry_user = 'mhzboy2008'
     def registry_pswd = 'gte123456'
