@@ -55,7 +55,7 @@ node {
         echo "Dify镜像 ${vllmImage} 推送完毕"
     }
 
-    stage('5：清理本地镜像) {
+    stage('5：清理本地镜像') {
         echo "开始清理本地镜像..."
         sh "docker rmi ${difyApiImage} ${difyWebImage} ${vllmImage} || true"
         echo "本地镜像 ${difyApiImage} ${difyWebImage} ${vllmImage} 清理完毕"
